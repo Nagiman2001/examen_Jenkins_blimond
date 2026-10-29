@@ -66,9 +66,9 @@ pipeline {
                 sh '''
                     helm upgrade --install examen charts \
                       --namespace dev --create-namespace \
-                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.repository="nagiman/movie-service" \
                       --set movieService.image.tag="${BUILD_NUMBER}" \
-                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.repository="nagiman/cast-service" \
                       --set castService.image.tag="${BUILD_NUMBER}" \
                       --wait --timeout 5m
                 '''
@@ -87,9 +87,9 @@ pipeline {
                 sh '''
                     helm upgrade --install examen charts \
                       --namespace qa --create-namespace \
-                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.repository="nagiman/movie-service" \
                       --set movieService.image.tag="${BUILD_NUMBER}" \
-                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.repository="nagiman/cast-service" \
                       --set castService.image.tag="${BUILD_NUMBER}" \
                       --wait --timeout 5m
                 '''
@@ -108,9 +108,9 @@ pipeline {
                 sh '''
                     helm upgrade --install examen charts \
                       --namespace staging --create-namespace \
-                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.repository="nagiman/movie-service" \
                       --set movieService.image.tag="${BUILD_NUMBER}" \
-                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.repository="nagiman/cast-service" \
                       --set castService.image.tag="${BUILD_NUMBER}" \
                       --wait --timeout 5m
                 '''
@@ -144,9 +144,9 @@ pipeline {
                 sh '''
                     helm upgrade --install examen charts \
                       --namespace prod --create-namespace \
-                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.repository="nagiman/movie-service" \
                       --set movieService.image.tag="${BUILD_NUMBER}" \
-                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.repository="nagiman/cast-service" \
                       --set castService.image.tag="${BUILD_NUMBER}" \
                       --wait --timeout 5m
                 '''
