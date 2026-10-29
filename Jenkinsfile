@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -8,8 +7,7 @@ pipeline {
     }
 
     environment {
-        MOVIE_IMAGE = 'movie-service'
-        CAST_IMAGE  = 'cast-service'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -35,7 +33,7 @@ pipeline {
             }
         }
 
-        stage('Publier vers DockerHub') {
+        stage('Publish Docker Hub') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -62,11 +60,103 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy DEV') {
+            steps {
+                sh '''
+                    helm upgrade --install examen charts \
+                      --namespace dev --create-namespace \
+                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.tag="${BUILD_NUMBER}" \
+                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.tag="${BUILD_NUMBER}" \
+                      --wait --timeout 5m
+                '''
+            }
+        }
+
+        stage('Deploy QA') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'master' ||
+                    env.GIT_BRANCH == 'origin/master' ||
+                    env.GIT_BRANCH == 'master'
+                }
+            }
+            steps {
+                sh '''
+                    helm upgrade --install examen charts \
+                      --namespace qa --create-namespace \
+                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.tag="${BUILD_NUMBER}" \
+                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.tag="${BUILD_NUMBER}" \
+                      --wait --timeout 5m
+                '''
+            }
+        }
+
+        stage('Deploy STAGING') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'master' ||
+                    env.GIT_BRANCH == 'origin/master' ||
+                    env.GIT_BRANCH == 'master'
+                }
+            }
+            steps {
+                sh '''
+                    helm upgrade --install examen charts \
+                      --namespace staging --create-namespace \
+                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.tag="${BUILD_NUMBER}" \
+                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.tag="${BUILD_NUMBER}" \
+                      --wait --timeout 5m
+                '''
+            }
+        }
+
+        stage('Approve PRODUCTION deployment') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'master' ||
+                    env.GIT_BRANCH == 'origin/master' ||
+                    env.GIT_BRANCH == 'master'
+                }
+            }
+            steps {
+                input message: 'Deploy this build to PRODUCTION?',
+                      ok: 'Deploy to production',
+                      submitter: 'admin'
+            }
+        }
+
+        stage('Deploy PRODUCTION') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'master' ||
+                    env.GIT_BRANCH == 'origin/master' ||
+                    env.GIT_BRANCH == 'master'
+                }
+            }
+            steps {
+                sh '''
+                    helm upgrade --install examen charts \
+                      --namespace prod --create-namespace \
+                      --set movieService.image.repository="$DOCKERHUB_USER/movie-service" \
+                      --set movieService.image.tag="${BUILD_NUMBER}" \
+                      --set castService.image.repository="$DOCKERHUB_USER/cast-service" \
+                      --set castService.image.tag="${BUILD_NUMBER}" \
+                      --wait --timeout 5m
+                '''
+            }
+        }
     }
 
     post {
         always {
-            echo 'Pipeline terminé ! '
+            echo 'Pipeline terminé.'
         }
     }
 }

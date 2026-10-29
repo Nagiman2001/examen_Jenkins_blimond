@@ -1,16 +1,19 @@
+{{- range $name, $config := dict "movie-service" .Values.movieService "cast-service" .Values.castService }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "fastapiapp.fullname" . }}
+  name: {{ $name }}
   labels:
-    {{- include "fastapiapp.labels" . | nindent 4 }}
+    app: {{ $name }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ $config.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
-      nodePort: {{ .Values.service.nodePort }}
+    - name: http
+      port: {{ $config.service.port }}
+      targetPort: 8000
+      nodePort: {{ $config.service.nodePort }}
       protocol: TCP
-      name: http
   selector:
-    {{- include "fastapiapp.selectorLabels" . | nindent 4 }}
+    app: {{ $name }}
+---
+{{- end }}
