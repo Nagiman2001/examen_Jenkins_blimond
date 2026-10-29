@@ -14,6 +14,15 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    def branch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: ''
+                    branch = branch.replaceFirst(/^origin\\//, '')
+                    if (!branch) {
+                        error('Impossible de déterminer la branche Git ; arrêt par sécurité.')
+                    }
+                    env.SOURCE_BRANCH = branch
+                    echo "Branche détectée : ${env.SOURCE_BRANCH}"
+                }
             }
         }
 
@@ -78,9 +87,7 @@ pipeline {
         stage('Deploy QA') {
             when {
                 expression {
-                    env.BRANCH_NAME == 'master' ||
-                    env.GIT_BRANCH == 'origin/master' ||
-                    env.GIT_BRANCH == 'master'
+                    env.SOURCE_BRANCH == 'master'
                 }
             }
             steps {
@@ -99,9 +106,7 @@ pipeline {
         stage('Deploy STAGING') {
             when {
                 expression {
-                    env.BRANCH_NAME == 'master' ||
-                    env.GIT_BRANCH == 'origin/master' ||
-                    env.GIT_BRANCH == 'master'
+                    env.SOURCE_BRANCH == 'master'
                 }
             }
             steps {
@@ -120,9 +125,7 @@ pipeline {
         stage('Approve PRODUCTION deployment') {
             when {
                 expression {
-                    env.BRANCH_NAME == 'master' ||
-                    env.GIT_BRANCH == 'origin/master' ||
-                    env.GIT_BRANCH == 'master'
+                    env.SOURCE_BRANCH == 'master'
                 }
             }
             steps {
@@ -135,9 +138,7 @@ pipeline {
         stage('Deploy PRODUCTION') {
             when {
                 expression {
-                    env.BRANCH_NAME == 'master' ||
-                    env.GIT_BRANCH == 'origin/master' ||
-                    env.GIT_BRANCH == 'master'
+                    env.SOURCE_BRANCH == 'master'
                 }
             }
             steps {
