@@ -7,7 +7,6 @@ movieService:
   service:
     type: NodePort
     port: 8000
-    nodePort: 30007
 
 castService:
   replicaCount: 1
@@ -18,6 +17,5 @@ castService:
   service:
     type: NodePort
     port: 8000
-    nodePort: 30008
 
 imagePullSecrets: []
